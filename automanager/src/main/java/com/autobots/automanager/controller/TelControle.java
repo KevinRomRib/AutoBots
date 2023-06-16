@@ -1,11 +1,13 @@
 package com.autobots.automanager.controller;
 
-import com.autobots.automanager.entity.Doc;
 import com.autobots.automanager.entity.Tel;
+import com.autobots.automanager.model.TelAddLink;
 import com.autobots.automanager.model.TelefoneAtualizador;
 import com.autobots.automanager.model.TelefoneSelecionador;
-import com.autobots.automanager.repositorios.RepositorioTel;
+import com.autobots.automanager.repository.RepositorioTel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,35 +22,70 @@ public class TelControle {
     @Autowired
     private TelefoneSelecionador selecionador;
 
+    @Autowired
+    private TelAddLink adicionadorLink;
+
     @GetMapping("/findAll")
-    public List<Tel> buscarTel(){
+    public ResponseEntity<List<Tel>> buscarTel(){
         List<Tel> tels = repositorio.findAll();
-        return tels;
+        if (tels.isEmpty()) {
+            ResponseEntity<List<Tel>> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return resposta;
+        } else {
+            adicionadorLink.addLink(tels);
+            ResponseEntity<List<Tel>> resposta = new ResponseEntity<>(tels, HttpStatus.FOUND);
+            return resposta;
+        }
     }
 
     @GetMapping("/findOne/{id}")
-    public Tel buscarTelPorId(@PathVariable Long id){
-        List<Tel> tel = repositorio.findAll();
-        return selecionador.selecionar(tel, id);
+    public ResponseEntity<Tel> buscarTelPorId(@PathVariable Long id){
+        List<Tel> tels = repositorio.findAll();
+        Tel tel = selecionador.selecionar(tels, id);
+        if (tel == null) {
+            ResponseEntity<Tel> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return resposta;
+        } else {
+            adicionadorLink.addLink(tel);
+            ResponseEntity<Tel> resposta = new ResponseEntity<>(tel, HttpStatus.FOUND);
+            return resposta;
+        }
     }
 
     @PostMapping("/cad")
-    public void cadTel(@RequestBody Tel tel) {
-        repositorio.save(tel);
+    public ResponseEntity<?> cadTel(@RequestBody Tel tel) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        if (tel.getId() == null) {
+            repositorio.save(tel);
+            status = HttpStatus.CREATED;
+        }
+        return new ResponseEntity<>(status);
     }
 
 
     @PutMapping("/update")
-    public void updateTel(@RequestBody Tel atualizacao) {
+    public ResponseEntity<?> updateTel(@RequestBody Tel atualizacao) {
+        HttpStatus status = HttpStatus.CONFLICT;
         Tel tel = repositorio.getById(atualizacao.getId());
-        TelefoneAtualizador atualizador = new TelefoneAtualizador();
-        atualizador.atualizar(tel, atualizacao);
-        repositorio.save(tel);
+        if (tel != null) {
+            TelefoneAtualizador atualizador = new TelefoneAtualizador();
+            atualizador.atualizar(tel, atualizacao);
+            repositorio.save(tel);
+            status = HttpStatus.OK;
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+        }
+        return new ResponseEntity<>(status);
     }
 
     @DeleteMapping("/delete")
-    public void deleteTel(@RequestBody Doc exclusao) {
+    public ResponseEntity<?> deleteTel(@RequestBody Tel exclusao) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
         Tel tel = repositorio.getById(exclusao.getId());
-        repositorio.delete(tel);
+        if (tel != null) {
+            repositorio.delete(tel);
+            status = HttpStatus.OK;
+        }
+        return new ResponseEntity<>(status);
     }
 }

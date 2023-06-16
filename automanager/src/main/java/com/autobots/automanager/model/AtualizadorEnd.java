@@ -3,26 +3,26 @@ package com.autobots.automanager.model;
 import com.autobots.automanager.entity.End;
 
 public class AtualizadorEnd {
-	private VerificadSeNulo verificador = new VerificadSeNulo();
+	private VerificadSeNulo verif = new VerificadSeNulo();
 
 	public void atualizar(End end, End atualizacao) {
 		if (atualizacao != null) {
-			if (!verificador.verificar(atualizacao.getEstado())) {
+			if (!verif.verificar(atualizacao.getEstado())) {
 				end.setEstado(atualizacao.getEstado());
 			}
-			if (!verificador.verificar(atualizacao.getCidade())) {
+			if (!verif.verificar(atualizacao.getCidade())) {
 				end.setCidade(atualizacao.getCidade());
 			}
-			if (!verificador.verificar(atualizacao.getBairro())) {
+			if (!verif.verificar(atualizacao.getBairro())) {
 				end.setBairro(atualizacao.getBairro());
 			}
-			if (!verificador.verificar(atualizacao.getRua())) {
+			if (!verif.verificar(atualizacao.getRua())) {
 				end.setRua(atualizacao.getRua());
 			}
-			if (!verificador.verificar(atualizacao.getNumero())) {
+			if (!verif.verificar(atualizacao.getNumero())) {
 				end.setNumero(atualizacao.getNumero());
 			}
-			if (!verificador.verificar(atualizacao.getInformacoesAdicionais())) {
+			if (!verif.verificar(atualizacao.getInformacoesAdicionais())) {
 				end.setInformacoesAdicionais(atualizacao.getInformacoesAdicionais());
 			}
 		}

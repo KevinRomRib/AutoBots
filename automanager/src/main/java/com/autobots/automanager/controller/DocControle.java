@@ -1,10 +1,13 @@
 package com.autobots.automanager.controller;
 
 import com.autobots.automanager.entity.Doc;
+import com.autobots.automanager.model.DocAddLink;
 import com.autobots.automanager.model.AtualizadorDoc;
 import com.autobots.automanager.model.SelectDoc;
-import com.autobots.automanager.repositorios.RepositorioDoc;
+import com.autobots.automanager.repository.RepositorioDoc;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,36 +21,71 @@ public class DocControle {
 
     @Autowired
     private SelectDoc selecionador;
+    @Autowired
+    private DocAddLink adicionadorLink;
 
     @GetMapping("/findAll")
-    public List<Doc> buscarDoc(){
+    public ResponseEntity<List<Doc>> buscarDoc(){
         List<Doc> docs = repositorio.findAll();
-        return docs;
+        if (docs.isEmpty()) {
+            ResponseEntity<List<Doc>> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return resposta;
+        } else {
+            adicionadorLink.addLink(docs);
+            ResponseEntity<List<Doc>> resposta = new ResponseEntity<>(docs, HttpStatus.FOUND);
+            return resposta;
+        }
     }
 
     @GetMapping("/findOne/{id}")
-    public Doc buscarDocPorId(@PathVariable Long id){
-        List<Doc> doc = repositorio.findAll();
-        return selecionador.selecionar(doc, id);
+    public ResponseEntity<Doc> buscarDocPorId(@PathVariable Long id){
+        List<Doc> docs = repositorio.findAll();
+        Doc doc =  selecionador.selecionar(docs, id);
+        if (doc == null) {
+            ResponseEntity<Doc> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return resposta;
+        } else {
+            adicionadorLink.addLink(doc);
+            ResponseEntity<Doc> resposta = new ResponseEntity<>(doc, HttpStatus.FOUND);
+            return resposta;
+        }
     }
 
     @PostMapping("/cad")
-    public void cadDoc(@RequestBody Doc doc) {
-        repositorio.save(doc);
+    public ResponseEntity<?> cadDoc(@RequestBody Doc doc) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        if (doc.getId() == null) {
+            repositorio.save(doc);
+            status = HttpStatus.CREATED;
+        }
+        return new ResponseEntity<>(status);
     }
 
 
     @PutMapping("/update")
-    public void updateDoc(@RequestBody Doc atualizacao) {
+    public ResponseEntity<?> updateDoc(@RequestBody Doc atualizacao) {
+        HttpStatus status = HttpStatus.CONFLICT;
         Doc doc = repositorio.getById(atualizacao.getId());
-        AtualizadorDoc atualizador = new AtualizadorDoc();
-        atualizador.atualizar(doc, atualizacao);
-        repositorio.save(doc);
+        if (doc != null) {
+            AtualizadorDoc atualizador = new AtualizadorDoc();
+            atualizador.atualizar(doc, atualizacao);
+            repositorio.save(doc);
+            status = HttpStatus.OK;
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+        }
+        return new ResponseEntity<>(status);
     }
 
     @DeleteMapping("/delete")
-    public void deleteDoc(@RequestBody Doc exclusao) {
+    public ResponseEntity<?> deleteDoc(@RequestBody Doc exclusao) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
         Doc doc = repositorio.getById(exclusao.getId());
-        repositorio.delete(doc);
+        if (doc != null) {
+            repositorio.delete(doc);
+            status = HttpStatus.OK;
+        }
+        return new ResponseEntity<>(status);
+
     }
 }

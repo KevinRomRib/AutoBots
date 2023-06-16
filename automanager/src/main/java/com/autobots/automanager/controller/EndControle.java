@@ -1,10 +1,13 @@
 package com.autobots.automanager.controller;
 
 import com.autobots.automanager.entity.End;
+import com.autobots.automanager.model.EndAddLink;
 import com.autobots.automanager.model.AtualizadorEnd;
 import com.autobots.automanager.model.SelectEnd;
-import com.autobots.automanager.repositorios.RepositorioEnd;
+import com.autobots.automanager.repository.RepositorioEnd;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,35 +21,72 @@ public class EndControle {
     @Autowired
     private SelectEnd selecionador;
 
+    @Autowired
+    private EndAddLink adicionadorLink;
+
+
     @GetMapping("/findAll")
-    public List<End> buscarEnd(){
+    public ResponseEntity<List<End>> buscarEnd(){
         List<End> ends = repositorio.findAll();
-        return ends;
+        if (ends.isEmpty()) {
+            ResponseEntity<List<End>> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return resposta;
+        } else {
+            adicionadorLink.addLink(ends);
+            ResponseEntity<List<End>> resposta = new ResponseEntity<>(ends, HttpStatus.FOUND);
+            return resposta;
+        }
     }
 
     @GetMapping("/findOne/{id}")
-    public End buscarEndPorId(@PathVariable Long id){
-        List<End> end = repositorio.findAll();
-        return selecionador.selecionar(end, id);
+    public ResponseEntity<End> buscarEndPorId(@PathVariable Long id){
+        List<End> ends = repositorio.findAll();
+        End end = selecionador.selecionar(ends, id);
+        if (end == null) {
+            ResponseEntity<End> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return resposta;
+        } else {
+            adicionadorLink.addLink(end);
+            ResponseEntity<End> resposta = new ResponseEntity<>(end, HttpStatus.FOUND);
+            return resposta;
+        }
     }
 
     @PostMapping("/cad")
-    public void cadEnd(@RequestBody End end) {
-        repositorio.save(end);
+    public ResponseEntity<?> cadEnd(@RequestBody End end) {
+        HttpStatus status = HttpStatus.CONFLICT;
+        if (end.getId() == null) {
+            repositorio.save(end);
+            status = HttpStatus.CREATED;
+        }
+        return new ResponseEntity<>(status);
     }
 
 
     @PutMapping("/update")
-    public void updateEnd(@RequestBody End atualizacao) {
+    public ResponseEntity<?> updateEnd(@RequestBody End atualizacao) {
+        HttpStatus status = HttpStatus.CONFLICT;
         End end = repositorio.getById(atualizacao.getId());
-        AtualizadorEnd atualizador = new AtualizadorEnd();
-        atualizador.atualizar(end, atualizacao);
-        repositorio.save(end);
+        if (end != null) {
+            AtualizadorEnd atualizador = new AtualizadorEnd();
+            atualizador.atualizar(end, atualizacao);
+            repositorio.save(end);
+            status = HttpStatus.OK;
+        } else {
+            status = HttpStatus.BAD_REQUEST;
+        }
+        return new ResponseEntity<>(status);
+
     }
 
     @DeleteMapping("/delete")
-    public void deleteEnd(@RequestBody End exclusao) {
+    public ResponseEntity<?> deleteEnd(@RequestBody End exclusao) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
         End end = repositorio.getById(exclusao.getId());
-        repositorio.delete(end);
+        if (end != null) {
+            repositorio.delete(end);
+            status = HttpStatus.OK;
+        }
+        return new ResponseEntity<>(status);
     }
 }

@@ -2,7 +2,7 @@ package com.autobots.automanager.model;
 
 import com.autobots.automanager.entity.Client;
 
-public class AtualizadorCliente {
+public class AtualizadorClient {
 	private VerificadSeNulo verif = new VerificadSeNulo();
 	private AtualizadorEnd atualizadorEnd = new AtualizadorEnd();
 	private AtualizadorDoc atualizadorDoc = new AtualizadorDoc();
@@ -23,7 +23,7 @@ public class AtualizadorCliente {
 		}
 	}
 
-	public void atualizar(Client client, Client atualizacao) {
+	public void atualizar (Client client, Client atualizacao) {
 		atualizarDados(client, atualizacao);
 		atualizadorEnd.atualizar(client.getEnd(), atualizacao.getEnd());
 		atualizadorDoc.atualizar(client.getDocs(), atualizacao.getDocs());

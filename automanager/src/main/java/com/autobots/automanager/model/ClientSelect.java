@@ -2,9 +2,8 @@ package com.autobots.automanager.model;
 
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 import com.autobots.automanager.entity.Client;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ClientSelect {

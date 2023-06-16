@@ -2,6 +2,7 @@ package com.autobots.automanager;
 
 import java.util.Calendar;
 
+import com.autobots.automanager.entity.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -9,11 +10,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
-import com.autobots.automanager.entity.Client;
 import com.autobots.automanager.entity.Doc;
 import com.autobots.automanager.entity.End;
 import com.autobots.automanager.entity.Tel;
-import com.autobots.automanager.repositorios.RepositorioCli;
+import com.autobots.automanager.repository.RepositorioCli;
 
 @SpringBootApplication
 public class AutomanagerApplication {
@@ -58,7 +58,7 @@ public class AutomanagerApplication {
 			rg.setNumero("1500");
 			
 			Doc cpf = new Doc();
-			cpf.setTipo("RG");
+			cpf.setTipo("CPF");
 			cpf.setNumero("00000000001");
 			
 			client.getDocs().add(rg);

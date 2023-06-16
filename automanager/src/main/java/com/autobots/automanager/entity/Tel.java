@@ -7,10 +7,11 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import lombok.Data;
+import org.springframework.hateoas.RepresentationModel;
 
 @Data
 @Entity
-public class Tel {
+public class Tel extends RepresentationModel<Tel> {
 	@Id()
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
