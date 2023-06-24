@@ -4,15 +4,15 @@ import java.util.List;
 
 import com.autobots.automanager.entity.Tel;
 
-public class TelefoneAtualizador {
-	private VerificadSeNulo verificador = new VerificadSeNulo();
+public class AtualizadorTel {
+	private VerificadSeNulo verif = new VerificadSeNulo();
 
 	public void atualizar(Tel tel, Tel atualizacao) {
 		if (atualizacao != null) {
-			if (!verificador.verificar(atualizacao.getDdd())) {
+			if (!verif.verificar(atualizacao.getDdd())) {
 				tel.setDdd(atualizacao.getDdd());
 			}
-			if (!verificador.verificar(atualizacao.getNumero())) {
+			if (!verif.verificar(atualizacao.getNumero())) {
 				tel.setNumero(atualizacao.getNumero());
 			}
 		}

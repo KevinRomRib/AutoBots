@@ -13,7 +13,7 @@ import com.autobots.automanager.entity.Client;
 import com.autobots.automanager.entity.Doc;
 import com.autobots.automanager.entity.End;
 import com.autobots.automanager.entity.Tel;
-import com.autobots.automanager.repositorios.RepositorioCli;
+import com.autobots.automanager.repository.RepositorioCli;
 
 @SpringBootApplication
 public class AutomanagerApplication {

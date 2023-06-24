@@ -6,7 +6,7 @@ public class AtualizadorCliente {
 	private VerificadSeNulo verif = new VerificadSeNulo();
 	private AtualizadorEnd atualizadorEnd = new AtualizadorEnd();
 	private AtualizadorDoc atualizadorDoc = new AtualizadorDoc();
-	private TelefoneAtualizador atualizadorTel = new TelefoneAtualizador();
+	private AtualizadorTel atualizadorTel = new AtualizadorTel();
 
 	private void atualizarDados(Client client, Client atualizacao) {
 		if (!verif.verificar(atualizacao.getNome())) {

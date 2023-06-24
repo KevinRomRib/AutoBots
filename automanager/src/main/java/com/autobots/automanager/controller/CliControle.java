@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.autobots.automanager.entity.Client;
 import com.autobots.automanager.model.AtualizadorCliente;
 import com.autobots.automanager.model.ClientSelect;
-import com.autobots.automanager.repositorios.RepositorioCli;
+import com.autobots.automanager.repository.RepositorioCli;
 
 @RestController
-@RequestMapping("/client")
+@RequestMapping("/cli")
 public class CliControle {
 	@Autowired
 	private RepositorioCli repositorio;

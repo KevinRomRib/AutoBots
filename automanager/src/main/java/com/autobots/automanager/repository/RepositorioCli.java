@@ -1,4 +1,4 @@
-package com.autobots.automanager.repositorios;
+package com.autobots.automanager.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

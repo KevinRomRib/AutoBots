@@ -1,53 +1,73 @@
 package com.autobots.automanager.controller;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.autobots.automanager.entity.Client;
 import com.autobots.automanager.entity.Doc;
 import com.autobots.automanager.model.AtualizadorDoc;
 import com.autobots.automanager.model.SelectDoc;
-import com.autobots.automanager.repositorios.RepositorioDoc;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import com.autobots.automanager.repository.RepositorioCli;
+import com.autobots.automanager.repository.RepositorioDoc;
 
 @RestController
 @RequestMapping("/doc")
 public class DocControle {
+	@Autowired
+	private RepositorioDoc repositorioDocumento;
+	@Autowired
+	private RepositorioCli repositorioCliente;
+	@Autowired
+	private SelectDoc selecionadorDocumento;
 
-    @Autowired
-    private RepositorioDoc repositorio;
+	@GetMapping("/findOne/{id}")
+	public Doc obterDoc(@PathVariable long id) {
+		List<Doc> docs = repositorioDocumento.findAll();
+		return selecionadorDocumento.selecionar(docs, id);
+	}
 
-    @Autowired
-    private SelectDoc selecionador;
+	@GetMapping("/findAll")
+	public List<Doc> obterDoc() {
+		List<Doc> docs = repositorioDocumento.findAll();
+		return docs;
+	}
 
-    @GetMapping("/findAll")
-    public List<Doc> buscarDoc(){
-        List<Doc> docs = repositorio.findAll();
-        return docs;
-    }
+	@PostMapping("/cad/{id}")
+	public void cadDoc(@RequestBody Doc doc, @PathVariable long id) {
+		Client client = repositorioCliente.getById(id);
+		client.getDocs().add(doc);
+	    repositorioCliente.save(client);
+		
+	}
 
-    @GetMapping("/findOne/{id}")
-    public Doc buscarDocPorId(@PathVariable Long id){
-        List<Doc> doc = repositorio.findAll();
-        return selecionador.selecionar(doc, id);
-    }
+	@PutMapping("/update")
+	public void updateDoc(@RequestBody Doc atualizacao) {
+		Doc doc = repositorioDocumento.getById(atualizacao.getId());
+		AtualizadorDoc atualizador = new AtualizadorDoc();
+		atualizador.atualizar(doc, atualizacao);
+		repositorioDocumento.save(doc);
+	}
 
-    @PostMapping("/cad")
-    public void cadDoc(@RequestBody Doc doc) {
-        repositorio.save(doc);
-    }
-
-
-    @PutMapping("/update")
-    public void updateDoc(@RequestBody Doc atualizacao) {
-        Doc doc = repositorio.getById(atualizacao.getId());
-        AtualizadorDoc atualizador = new AtualizadorDoc();
-        atualizador.atualizar(doc, atualizacao);
-        repositorio.save(doc);
-    }
-
-    @DeleteMapping("/delete")
-    public void deleteDoc(@RequestBody Doc exclusao) {
-        Doc doc = repositorio.getById(exclusao.getId());
-        repositorio.delete(doc);
-    }
+	@DeleteMapping("/delete/{id}")
+	public void deleteDoc(@RequestBody Doc exclusao, @PathVariable long id) {
+		Client client = repositorioCliente.getById(id);
+		List<Doc> documentosCliente = client.getDocs();
+		for (Doc doc : documentosCliente) {
+	        if (doc.getId() == exclusao.getId()) {
+	            documentosCliente.remove(doc);
+	            break;
+	        }
+	    }
+	    client.setDocs(documentosCliente);
+		repositorioCliente.save(client);
+	}
 }
