@@ -6,7 +6,7 @@ public class AtualizadorClient {
 	private VerificadSeNulo verif = new VerificadSeNulo();
 	private AtualizadorEnd atualizadorEnd = new AtualizadorEnd();
 	private AtualizadorDoc atualizadorDoc = new AtualizadorDoc();
-	private TelefoneAtualizador atualizadorTel = new TelefoneAtualizador();
+	private AtualizadorTel atualizadorTel = new AtualizadorTel();
 
 	private void atualizarDados(Client client, Client atualizacao) {
 		if (!verif.verificar(atualizacao.getNome())) {
@@ -23,7 +23,7 @@ public class AtualizadorClient {
 		}
 	}
 
-	public void atualizar (Client client, Client atualizacao) {
+	public void atualizar(Client client, Client atualizacao) {
 		atualizarDados(client, atualizacao);
 		atualizadorEnd.atualizar(client.getEnd(), atualizacao.getEnd());
 		atualizadorDoc.atualizar(client.getDocs(), atualizacao.getDocs());

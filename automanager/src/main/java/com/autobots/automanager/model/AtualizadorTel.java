@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.autobots.automanager.entity.Tel;
 
-public class TelefoneAtualizador {
+public class AtualizadorTel {
 	private VerificadSeNulo verif = new VerificadSeNulo();
 
 	public void atualizar(Tel tel, Tel atualizacao) {

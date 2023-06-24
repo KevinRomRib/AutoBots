@@ -2,8 +2,6 @@ package com.autobots.automanager.controller;
 
 import java.util.List;
 
-import com.autobots.automanager.entity.Client;
-import com.autobots.automanager.model.CliAddLink;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +14,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.autobots.automanager.adder.AddLinkCli;
+import com.autobots.automanager.adder.AddLinkDoc;
+import com.autobots.automanager.adder.AddLinkEnd;
+import com.autobots.automanager.adder.AddLinkTel;
+import com.autobots.automanager.entity.Client;
+import com.autobots.automanager.entity.Doc;
+import com.autobots.automanager.entity.Tel;
 import com.autobots.automanager.model.AtualizadorClient;
+import com.autobots.automanager.model.SelectCliDoc;
 import com.autobots.automanager.model.ClientSelect;
+import com.autobots.automanager.model.SelectCliTel;
+import com.autobots.automanager.model.SelectDoc;
+import com.autobots.automanager.model.SelectTel;
 import com.autobots.automanager.repository.RepositorioCli;
 
 @RestController
@@ -27,12 +36,25 @@ public class CliControle {
 	private RepositorioCli repositorio;
 	@Autowired
 	private ClientSelect selecionador;
-
 	@Autowired
-	private CliAddLink adicionadorLink;
+	private SelectCliDoc selecionadorCliDocumento;
+	@Autowired
+	private SelectDoc selecionadorDocumento;
+	@Autowired
+	private AddLinkCli adicionadorLink;
+	@Autowired
+	private AddLinkDoc adicionadorLinkDocumento;
+	@Autowired
+	private AddLinkEnd adicionadorLinkEndereco;
+	@Autowired
+	private SelectTel selecionadorTelefone;
+	@Autowired
+	private SelectCliTel selecionadorCliTelefone;
+	@Autowired
+	private AddLinkTel adicionadorLinkTelefone;
 
 	@GetMapping("/findOne/{id}")
-	public  ResponseEntity<Client> obterCli(@PathVariable long id) {
+	public ResponseEntity<Client> obterCli(@PathVariable long id) {
 		List<Client> clients = repositorio.findAll();
 		Client client = selecionador.selecionar(clients, id);
 		if (client == null) {
@@ -40,10 +62,27 @@ public class CliControle {
 			return resposta;
 		} else {
 			adicionadorLink.addLink(client);
+			for (Doc doc : client.getDocs()) {
+				Doc documento = selecionadorDocumento.selecionar(client.getDocs(), doc.getId());
+				adicionadorLinkDocumento.addLink(documento);
+				client = selecionadorCliDocumento.selecionar(clients, doc);
+				adicionadorLinkDocumento.addLink(doc, client);
+			}
+			if (!(client.getEnd() == null)) {
+				adicionadorLinkEndereco.addLink(client.getEnd());
+				adicionadorLinkEndereco.addLink(client.getEnd(), client);
+			}
+			for (Tel tel : client.getTels()) {
+				Tel telefone = selecionadorTelefone.selecionar(client.getTels(), tel.getId());
+				adicionadorLinkTelefone.addLink(telefone);
+				client = selecionadorCliTelefone.selecionar(clients, telefone);
+				adicionadorLinkTelefone.addLink(tel, client);
+			}
 			ResponseEntity<Client> resposta = new ResponseEntity<Client>(client, HttpStatus.FOUND);
 			return resposta;
 		}
 	}
+
 	@GetMapping("/findAll")
 	public ResponseEntity<List<Client>> obterCli() {
 		List<Client> clients = repositorio.findAll();
@@ -52,10 +91,29 @@ public class CliControle {
 			return resposta;
 		} else {
 			adicionadorLink.addLink(clients);
-			ResponseEntity<List<Client>> resposta = new ResponseEntity<>(clients, HttpStatus.FOUND);
-			return resposta;
+			for (Client client : clients) {
+				for (Doc doc : client.getDocs()) {
+					Doc documento = selecionadorDocumento.selecionar(client.getDocs(), doc.getId());
+					adicionadorLinkDocumento.addLink(documento);
+					client = selecionadorCliDocumento.selecionar(clients, doc);
+					adicionadorLinkDocumento.addLink(doc, client);
+				}
+				if (!(client.getEnd() == null)) {
+					adicionadorLinkEndereco.addLink(client.getEnd());
+					adicionadorLinkEndereco.addLink(client.getEnd(), client);
+				}
+				for (Tel tel : client.getTels()) {
+					Tel telefone = selecionadorTelefone.selecionar(client.getTels(), tel.getId());
+					adicionadorLinkTelefone.addLink(telefone);
+					client = selecionadorCliTelefone.selecionar(clients, telefone);
+					adicionadorLinkTelefone.addLink(tel, client);
+				}
+			}
 		}
+		ResponseEntity<List<Client>> resposta = new ResponseEntity<>(clients, HttpStatus.FOUND);
+		return resposta;
 	}
+
 
 	@PostMapping("/cad")
 	public ResponseEntity<?> cadCli(@RequestBody Client client) {

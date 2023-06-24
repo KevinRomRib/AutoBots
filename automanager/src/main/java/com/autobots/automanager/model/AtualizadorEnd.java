@@ -22,6 +22,9 @@ public class AtualizadorEnd {
 			if (!verif.verificar(atualizacao.getNumero())) {
 				end.setNumero(atualizacao.getNumero());
 			}
+			if (!verif.verificar(atualizacao.getCodigoPostal())) {
+				end.setCodigoPostal(atualizacao.getCodigoPostal());
+			}
 			if (!verif.verificar(atualizacao.getInformacoesAdicionais())) {
 				end.setInformacoesAdicionais(atualizacao.getInformacoesAdicionais());
 			}

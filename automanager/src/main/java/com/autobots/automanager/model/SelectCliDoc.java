@@ -5,14 +5,17 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.autobots.automanager.entity.Client;
+import com.autobots.automanager.entity.Doc;
 
 @Component
-public class ClientSelect {
-	public Client selecionar(List<Client> clients, long id) {
+public class SelectCliDoc {
+	public Client selecionar(List<Client> clients, Doc documento) {
 		Client selecionado = null;
 		for (Client client : clients) {
-			if (client.getId() == id) {
-				selecionado = client;
+			for (Doc doc : client.getDocs()) {
+				if (doc.getId() == documento.getId()) {
+					selecionado = client;
+				}
 			}
 		}
 		return selecionado;

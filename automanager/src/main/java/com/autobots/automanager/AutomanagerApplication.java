@@ -2,7 +2,6 @@ package com.autobots.automanager;
 
 import java.util.Calendar;
 
-import com.autobots.automanager.entity.Client;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -10,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Component;
 
+import com.autobots.automanager.entity.Client;
 import com.autobots.automanager.entity.Doc;
 import com.autobots.automanager.entity.End;
 import com.autobots.automanager.entity.Tel;
@@ -37,35 +37,34 @@ public class AutomanagerApplication {
 			client.setDataCadastro(Calendar.getInstance().getTime());
 			client.setDataNascimento(calendario.getTime());
 			client.setNomeSocial("Dom Pedro");
-			
+
 			Tel tel = new Tel();
 			tel.setDdd("21");
 			tel.setNumero("981234576");
 			client.getTels().add(tel);
-			
+
 			End end = new End();
 			end.setEstado("Rio de Janeiro");
 			end.setCidade("Rio de Janeiro");
 			end.setBairro("Copacabana");
-			end.setRua("Avenida Atlântica");
+			end.setRua("Avenida AtlÃ¢ntica");
 			end.setNumero("1702");
 			end.setCodigoPostal("22021001");
 			end.setInformacoesAdicionais("Hotel Copacabana palace");
 			client.setEnd(end);
-			
+
 			Doc rg = new Doc();
 			rg.setTipo("RG");
 			rg.setNumero("1500");
-			
+
 			Doc cpf = new Doc();
-			cpf.setTipo("CPF");
+			cpf.setTipo("RG");
 			cpf.setNumero("00000000001");
-			
+
 			client.getDocs().add(rg);
 			client.getDocs().add(cpf);
-			
+
 			repositorio.save(client);
 		}
 	}
-
 }

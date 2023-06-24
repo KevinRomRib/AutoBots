@@ -6,12 +6,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
-public class End extends RepresentationModel<End> {
+public class End extends RepresentationModel<End>{
 	@Id()
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
