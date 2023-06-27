@@ -6,17 +6,20 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
-import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
 public class Tel extends RepresentationModel<Tel> {
 	@Id()
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	@Column
+	@Column(nullable = false)
 	private String ddd;
-	@Column
+	@Column(nullable = false)
 	private String numero;
 }

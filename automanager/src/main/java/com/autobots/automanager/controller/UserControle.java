@@ -1,136 +1,128 @@
 package com.autobots.automanager.controller;
 
+import java.util.List;
+import java.util.Set;
 
-import com.autobots.automanager.entity.*;
-import com.autobots.automanager.model.AddLinkUser;
-import com.autobots.automanager.service.ServiceEmp;
-import com.autobots.automanager.service.ServiceUser;
-import com.autobots.automanager.service.ServiceVeiculo;
-import com.autobots.automanager.service.ServiceVenda;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.autobots.automanager.adder.AddLinkUser;
+import com.autobots.automanager.updater.AtualizadorUser;
+import com.autobots.automanager.entity.Emp;
+import com.autobots.automanager.entity.User;
+import com.autobots.automanager.repository.RepositorioEmpresa;
+import com.autobots.automanager.repository.RepositorioUsuario;
+import com.autobots.automanager.selecter.EmpresaUsuarioSelecionador;
+import com.autobots.automanager.selecter.UsuarioSelecionador;
 
 @RestController
 @RequestMapping("/user")
 public class UserControle {
+	@Autowired
+	private RepositorioUsuario repositorioUsuario;
+	@Autowired
+	private UsuarioSelecionador selecionadorUsuario;
+	@Autowired
+	private EmpresaUsuarioSelecionador selecionadorEmpUsuario;
+	@Autowired
+	private RepositorioEmpresa repositorioEmpresa;
+	@Autowired
+	private AddLinkUser adicionadorLink;
 
-	@Autowired
-	private ServiceUser serviceUser;
-	
-	@Autowired
-	private ServiceEmp serviceEmp;
-	
-	@Autowired
-	private ServiceVenda serviceVenda;
-	
-	@Autowired
-	private ServiceVeiculo serviceVeiculo;
-	
-	@Autowired
-	private AddLinkUser adicionadorLinkUsuario;
-	
-	@PostMapping("/cadastrar/{id}")
-	public ResponseEntity<?> cadastrar(@RequestBody User user, @PathVariable Long id){
-		Emp empSelecionada = serviceEmp.findById(id);
-		
-		if(empSelecionada != null) {
-	        if(user.getPerfis().toString().contains("FORNECEDOR")) {
-	        	if(user.getMercadorias().size() > 0)
-	        	empSelecionada.getMercadorias().addAll(user.getMercadorias());
-	        }	
-	        
-	        serviceUser.create(user);
-	        
-	        empSelecionada.getUsers().add(user);
-	        serviceEmp.create(empSelecionada);
-
-	        return new ResponseEntity<> (HttpStatus.CREATED);
-	        
+	@GetMapping("/findOne/{id}")
+	public ResponseEntity<User> obterUser(@PathVariable long id) {
+		List<User> users = repositorioUsuario.findAll();
+		User user = selecionadorUsuario.selecionar(users, id);
+		if (user == null) {
+			ResponseEntity<User> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		} else {
+			adicionadorLink.adicionarLink(user);
+			List<Emp> emps = repositorioEmpresa.findAll();
+			for (User usu : users) {
+				Emp emp = selecionadorEmpUsuario.selecionar(emps, usu);
+				adicionadorLink.adicionarLink(usu, emp);
+			}
+			ResponseEntity<User> resposta = new ResponseEntity<User>(user, HttpStatus.FOUND);
+			return resposta;
 		}
-			return new ResponseEntity<> (HttpStatus.NOT_FOUND);
-        	
 	}
-	
-	
-	@GetMapping("/buscar")
-	public ResponseEntity<List<User>> pegarTodos(){
-		List<User> user = serviceUser.findAll();
-		adicionadorLinkUsuario.adicionarLink(user);
-		return new ResponseEntity<List<User>>(user, HttpStatus.FOUND);
+
+	@GetMapping("/findAll")
+	public ResponseEntity<List<User>> obterUsers() {
+		List<User> users = repositorioUsuario.findAll();
+		if (users.isEmpty()) {
+			ResponseEntity<List<User>> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		} else {
+			adicionadorLink.adicionarLink(users);
+			List<Emp> emps = repositorioEmpresa.findAll();
+			for (User user : users) {
+				Emp emp = selecionadorEmpUsuario.selecionar(emps, user);
+				adicionadorLink.adicionarLink(user, emp);
+			}
+			ResponseEntity<List<User>> resposta = new ResponseEntity<>(users, HttpStatus.FOUND);
+			return resposta;
+		}
 	}
-	
-	@GetMapping("/buscar/{id}")
-	public ResponseEntity<User> pegarUm(@PathVariable Long id){
-		User user = serviceUser.findById(id);
+
+	@PostMapping("/cad/{id}")
+	public ResponseEntity<?> cadUser(@RequestBody User user, @PathVariable long id) {
 		HttpStatus status = HttpStatus.CONFLICT;
-		if(user == null) {
-			status = HttpStatus.NOT_FOUND;	
-		}else{
-			adicionadorLinkUsuario.adicionarLink(user);
-			status = HttpStatus.FOUND;
+		if (user.getId() == null) {
+			Emp emp = repositorioEmpresa.getById(id);
+			Set<User> usuariosEmpresa = emp.getUsers();
+			usuariosEmpresa.add(user);
+			emp.setUsers(usuariosEmpresa);
+			repositorioEmpresa.save(emp);
+			status = HttpStatus.CREATED;
 		}
-		return new ResponseEntity<User>(user, status);
-	}
-	
-	@PutMapping("/cadastrar-credencial/{id}")
-	public ResponseEntity<?> cadastroCredencial(@PathVariable Long id, @RequestBody LoginDeUsuario credencialUsuario){
-		User user = serviceUser.findById(id);
-		if(user == null) {
-			  return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-		user.getCredenciais().add(credencialUsuario);
-		serviceUser.create(user);
-		return new ResponseEntity<>(HttpStatus.CREATED);
+		return new ResponseEntity<>(status);
+
 	}
 
-	@DeleteMapping("/deletar/{id}")
-	public ResponseEntity<?> deletar(@PathVariable Long id){
-		User userSelecionado = serviceUser.findById(id);
-		if (userSelecionado == null) {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	@PutMapping("/update")
+	public ResponseEntity<?> updateUser(@RequestBody User atualizacao) {
+		HttpStatus status = HttpStatus.CONFLICT;
+		User user = repositorioUsuario.getById(atualizacao.getId());
+		if (user != null) {
+			AtualizadorUser atualizador = new AtualizadorUser();
+			atualizador.atualizar(user, atualizacao);
+			repositorioUsuario.save(user);
+			status = HttpStatus.OK;
+		} else {
+			status = HttpStatus.BAD_REQUEST;
 		}
-		
-		for (Emp emp : serviceEmp.findAll()) {
-			for(User funcionario : emp.getUsers()) {
-				if(funcionario.getId() == userSelecionado.getId()) {
-					emp.getUsers().remove(funcionario);
+		return new ResponseEntity<>(status);
+	}
+
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<?> deleteUser(@RequestBody User exclusao, @PathVariable long id) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		User user = repositorioUsuario.getById(exclusao.getId());
+		if (user != null) {
+			Emp emp = repositorioEmpresa.getById(id);
+			Set<User> users = emp.getUsers();
+			for (User usu: users) {
+				if (user.getId() == exclusao.getId()) {
+					users.remove(usu);
+					break;
 				}
 			}
+			emp.setUsers(users);
+			repositorioEmpresa.save(emp);
+			status = HttpStatus.OK;
 		}
 		
-		 for(Venda venda : serviceVenda.findAll()) {
-			 if(venda.getFuncionario().getId() == userSelecionado.getId()) {
-				 venda.setFuncionario(null);
-			 }
-			 if(venda.getCliente().getId() == userSelecionado.getId()) {
-				 venda.setCliente(null);
-			 }
-		 }
-		
-		for (Veiculo veiculo : serviceVeiculo.findAll()) {
-			if(veiculo.getProprietario().getId() == userSelecionado.getId()) {
-				veiculo.setProprietario(null);
-			}
-		}
-		
-		userSelecionado.getDocs().removeAll(userSelecionado.getDocs());
-		userSelecionado.getTels().removeAll(userSelecionado.getTels());
-		userSelecionado.getEmails().removeAll(userSelecionado.getEmails());
-		userSelecionado.getCredenciais().removeAll(userSelecionado.getCredenciais());
-		userSelecionado.getMercadorias().removeAll(userSelecionado.getMercadorias());
-		userSelecionado.getVeiculos().removeAll(userSelecionado.getVeiculos());
-		userSelecionado.getVendas().removeAll(userSelecionado.getVendas());
-		userSelecionado.setEnd(null);
-		
-		
-		serviceUser.delete(userSelecionado);
-		
-		return new ResponseEntity<>(HttpStatus.OK);
-			
-		}
-
+		return new ResponseEntity<>(status);
+	}
 }

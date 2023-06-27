@@ -1,6 +1,5 @@
 package com.autobots.automanager.entity;
 
-
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -15,12 +14,15 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
-import lombok.Data;
 import org.springframework.hateoas.RepresentationModel;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
-public class Emp extends RepresentationModel<Emp> {
+public class Emp extends RepresentationModel<Emp>{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;

@@ -1,9 +1,10 @@
 package com.autobots.automanager.repository;
 
-import com.autobots.automanager.entity.Venda;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.autobots.automanager.entity.Venda;
 
-public interface RepositorioVenda extends JpaRepository<Venda,Long > {
+
+public interface RepositorioVenda extends JpaRepository<Venda, Long> {
 
 }

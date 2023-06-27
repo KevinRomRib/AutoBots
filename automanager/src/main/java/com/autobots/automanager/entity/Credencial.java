@@ -1,6 +1,5 @@
 package com.autobots.automanager.entity;
 
-
 import java.util.Date;
 
 import javax.persistence.Column;

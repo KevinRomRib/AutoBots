@@ -13,15 +13,20 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import com.autobots.automanager.enums.PerfisDeUsuario;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+
 import org.springframework.hateoas.RepresentationModel;
 
-@Data
+import com.autobots.automanager.enums.PerfilUsuario;
+
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @EqualsAndHashCode(exclude = { "mercadorias", "vendas", "veiculos" })
 @Entity
-public class User extends RepresentationModel<User> {
+public class User extends RepresentationModel<User>{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -30,7 +35,7 @@ public class User extends RepresentationModel<User> {
 	@Column
 	private String nomeSocial;
 	@ElementCollection(fetch = FetchType.EAGER)
-	private Set<PerfisDeUsuario> perfis = new HashSet<>();
+	private Set<PerfilUsuario> perfis = new HashSet<>();
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Set<Tel> tels = new HashSet<>();
 	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
