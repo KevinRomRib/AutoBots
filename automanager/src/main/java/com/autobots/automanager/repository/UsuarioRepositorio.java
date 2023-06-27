@@ -1,11 +1,11 @@
 package com.autobots.automanager.repository;
 
-import com.autobots.automanager.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+
+import com.autobots.automanager.entity.User;
 
 
-@Repository
-public interface UsuarioRepositorio extends JpaRepository<Usuario, Long> {
-    Usuario findByName(String nome);
+public interface UsuarioRepositorio extends JpaRepository<User, Long> {
+	User findByNome(String nomeUsuario);
 }
+ 

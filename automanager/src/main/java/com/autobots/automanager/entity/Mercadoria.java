@@ -1,21 +1,29 @@
 package com.autobots.automanager.entity;
 
 import java.util.Date;
-import jakarta.persistence.*;
 
-import lombok.Data;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+
 import org.springframework.hateoas.RepresentationModel;
 
-@Data
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 @Entity
-public class Mercadoria extends RepresentationModel<Mercadoria> {
+public class Mercadoria extends RepresentationModel<Mercadoria>{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@Column(nullable = false)
 	private Date validade;
 	@Column(nullable = false)
-	private Date fabricao;
+	private Date fabricacao;
 	@Column(nullable = false)
 	private Date cadastro;
 	@Column(nullable = false)
@@ -26,4 +34,5 @@ public class Mercadoria extends RepresentationModel<Mercadoria> {
 	private double valor;
 	@Column()
 	private String descricao;
+	
 }

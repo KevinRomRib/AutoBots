@@ -1,0 +1,122 @@
+package com.autobots.automanager.controller;
+
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.autobots.automanager.adder.AddLinkUser;
+import com.autobots.automanager.updater.AtualizadorUser;
+import com.autobots.automanager.entity.Emp;
+import com.autobots.automanager.entity.User;
+import com.autobots.automanager.repository.RepositorioEmp;
+import com.autobots.automanager.repository.UsuarioRepositorio;
+import com.autobots.automanager.selecter.UsuarioSelecionador;
+
+@RestController
+@RequestMapping("/user")
+public class UserControle {
+	@Autowired
+	private UsuarioRepositorio repositorioUsuario;
+	@Autowired
+	private UsuarioSelecionador selecionadorUsuario;
+	@Autowired
+	private RepositorioEmp repositorioEmp;
+	@Autowired
+	private AddLinkUser adicionadorLink;
+
+	@GetMapping("/findOne/{id}")
+	public ResponseEntity<User> obterUser(@PathVariable long id) {
+		List<User> users = repositorioUsuario.findAll();
+		User user = selecionadorUsuario.selecionar(users, id);
+		if (user == null) {
+			ResponseEntity<User> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		} else {
+			adicionadorLink.adicionarLink(user);
+			ResponseEntity<User> resposta = new ResponseEntity<User>(user, HttpStatus.FOUND);
+			return resposta;
+		}
+	}
+
+	@GetMapping("/findAll")
+	public ResponseEntity<List<User>> obterUser() {
+		List<User> users = repositorioUsuario.findAll();
+		if (users.isEmpty()) {
+			ResponseEntity<List<User>> resposta = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			return resposta;
+		} else {
+			adicionadorLink.adicionarLink(users);
+			ResponseEntity<List<User>> resposta = new ResponseEntity<>(users, HttpStatus.FOUND);
+			return resposta;
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	@PostMapping("/cad/{id}")
+	public ResponseEntity<?> cadUser(@RequestBody User user, @PathVariable long id) {
+		HttpStatus status = HttpStatus.CONFLICT;
+		if (user.getId() == null) {
+			try {
+				Emp emp = repositorioEmp.getById(id);
+				Set<User> usuariosEmpresa = emp.getUsers();
+				usuariosEmpresa.add(user);
+				emp.setUsers(usuariosEmpresa);
+				repositorioEmp.save(emp);
+				status = HttpStatus.CREATED;
+			} catch (Exception e) {
+				status = HttpStatus.BAD_REQUEST;
+			}
+		}
+		return new ResponseEntity<>(status);
+
+	}
+
+	@SuppressWarnings("deprecation")
+	@PutMapping("/update")
+	public ResponseEntity<?> updateUser(@RequestBody User atualizacao) {
+		HttpStatus status = HttpStatus.CONFLICT;
+		User user = repositorioUsuario.getById(atualizacao.getId());
+		if (user != null) {
+			AtualizadorUser atualizador = new AtualizadorUser();
+			atualizador.atualizar(user, atualizacao);
+			repositorioUsuario.save(user);
+			status = HttpStatus.OK;
+		} else {
+			status = HttpStatus.BAD_REQUEST;
+		}
+		return new ResponseEntity<>(status);
+	}
+
+	@SuppressWarnings("deprecation")
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<?> deleteUser(@RequestBody User exclusao, @PathVariable long id) {
+		HttpStatus status = HttpStatus.BAD_REQUEST;
+		User user = repositorioUsuario.getById(exclusao.getId());
+		if (user != null) {
+			Emp emp = repositorioEmp.getById(id);
+			Set<User> users = emp.getUsers();
+			for (User usu: users) {
+				if (user.getId() == exclusao.getId()) {
+					users.remove(usu);
+					break;
+				}
+			}
+			emp.setUsers(users);
+			repositorioEmp.save(emp);
+			status = HttpStatus.OK;
+		}
+		
+		return new ResponseEntity<>(status);
+	}
+}
